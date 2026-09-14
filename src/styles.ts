@@ -8,7 +8,7 @@ export const appStyle = css`
   justify-content: center;
   background-color: #000;
   color: #d4c46a;
-  font-family: Helvetica, sans-serif;
+  font-family: var(--font-din);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 `
