@@ -120,7 +120,6 @@ export const glyphsStyle = css`
   font-size: 1.35rem;
   line-height: 1.7;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
 `
 
 export const guideListStyle = css`

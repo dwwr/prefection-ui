@@ -37,8 +37,6 @@ const meta: Meta = {
 export default meta
 type Story = StoryObj
 
-const pangram = 'The hitchhiker’s guide to the galaxy, don’t panic.'
-
 const guideEntries = [
   { label: 'Foreword', color: '#5ec8e8' },
   { label: 'Hitchhiking', color: '#3ec6c9' },
@@ -70,17 +68,15 @@ export const Specimen: Story = {
         <div css={kickerStyle}>prefection-ui</div>
         <h1 css={titleStyle}>Alte DIN 1451</h1>
         <p css={creditStyle}>
-          Peter Wiegel’s free cut of DIN 1451 Mittelschrift. Regular follows the
-          standard; bold is the stamped / geprägt cut. SIL Open Font License.
+          Peter Wiegel’s DIN 1451 Mittelschrift. Regular follows the standard;
+          bold is the stamped / geprägt cut. SIL Open Font License.
         </p>
       </header>
 
       <section css={sectionStyle}>
         <div css={sectionLabelStyle}>Weights</div>
         <div css={stackStyle}>
-          <div css={[scaleHeading, weightRegular]}>
-            Regular — Don’t Panic
-          </div>
+          <div css={[scaleHeading, weightRegular]}>Regular — Don’t Panic</div>
           <div css={[scaleHeading, weightBold]}>Bold — Don’t Panic</div>
         </div>
       </section>
@@ -88,19 +84,19 @@ export const Specimen: Story = {
       <section css={sectionStyle}>
         <div css={sectionLabelStyle}>Scale</div>
         <ScaleRow label="Display" style={scaleDisplay}>
-          The Guide
+          So Long
         </ScaleRow>
         <ScaleRow label="Heading" style={scaleHeading}>
           What is it?
         </ScaleRow>
         <ScaleRow label="Title" style={scaleTitle}>
-          Introduction
+          Introduction: How we got here, & where we're going
         </ScaleRow>
         <ScaleRow label="Body" style={scaleBody}>
-          {pangram}
+          The quick brown fox jumps over the lazy dog.
         </ScaleRow>
         <ScaleRow label="Label" style={scaleLabel}>
-          Useless Info
+          Life, the Universe, and Everything
         </ScaleRow>
         <ScaleRow label="Caption" style={scaleCaption}>
           Who / What / Why / Where / When / How
@@ -115,8 +111,7 @@ export const Specimen: Story = {
           a b c d e f g h i j k l m n o p q r s t u v w x y z
           <br />
           0 1 2 3 4 5 6 7 8 9
-          <br />
-          . , ; : ! ? ’ “ ” ( ) [ ] / & @ # %
+          <br />. , ; : ! ? ’ “ ” ( ) [ ] / & @ # %
         </div>
       </section>
     </div>
@@ -129,9 +124,6 @@ export const GuideLabels: Story = {
       <header css={headerStyle}>
         <div css={kickerStyle}>In use</div>
         <h1 css={titleStyle}>Guide labels</h1>
-        <p css={creditStyle}>
-          All-caps, tracked labels in the register of the 2005 Guide menus.
-        </p>
       </header>
       <div css={guideListStyle}>
         {guideEntries.map(({ label, color }) => (
