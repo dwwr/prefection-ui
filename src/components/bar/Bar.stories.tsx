@@ -4,7 +4,7 @@ import { Bar } from './Bar'
 const meta: Meta<typeof Bar> = {
   title: 'Bar',
   component: Bar,
-  render: () => (
+  render: args => (
     <div
       style={{
         width: '100%',
@@ -16,7 +16,7 @@ const meta: Meta<typeof Bar> = {
         boxSizing: 'border-box',
       }}
     >
-      <Bar />
+      <Bar {...args} />
     </div>
   ),
 }
@@ -25,4 +25,11 @@ export default meta
 
 type Story = StoryObj<typeof Bar>
 
-export const Default: Story = {} as Story
+export const Default: Story = {
+  args: {
+    color: 'blue',
+    dotColor: 'lightblue',
+    label: 'Label',
+    segments: 5,
+  },
+}
