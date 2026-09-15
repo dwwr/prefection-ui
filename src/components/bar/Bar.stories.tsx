@@ -29,6 +29,7 @@ export const Default: Story = {
   args: {
     color: 'blue',
     dotColor: 'lightblue',
+    duration: 200,
     label: 'Label',
     segments: 5,
   },

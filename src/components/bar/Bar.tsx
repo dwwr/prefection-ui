@@ -5,21 +5,27 @@ import { useEffect, useRef } from 'react'
 
 const barStyle = css`
   display: flex;
-  /* background-color: red; */
+  overflow: visible;
 `
 
 const segmentStyle = css`
+  --h: 3rem;
   width: 15rem;
-  height: 3rem;
+  height: var(--h);
   background-color: blue;
   border-radius: 999px;
-  margin-left: -3rem;
+  margin-left: calc(-1 * var(--h));
   display: none;
   justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
-  transform-origin: left center;
+  transform-origin: calc(var(--h) / 2) center;
   overflow: visible;
+
+  &:first-of-type {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 `
 
 const labelStyle = css`
@@ -41,6 +47,7 @@ const dotStyle = css`
 export const Bar = ({
   color,
   dotColor,
+  duration,
   label,
   segments,
   onClick,
@@ -48,7 +55,7 @@ export const Bar = ({
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const tl = createTimeline({ defaults: { duration: 200 } })
+    const tl = createTimeline({ defaults: { duration } })
 
     const scope = createScope({ root }).add(() => {
       const show = {
@@ -57,9 +64,8 @@ export const Bar = ({
       }
 
       const flipUp = {
-        duration: 300,
+        duration: duration,
         rotate: ['-180deg', '0deg'],
-        transformOrigin: 'left center',
       }
 
       const flipDown = {
@@ -70,7 +76,7 @@ export const Bar = ({
       for (let i = 0; i < segments; i++) {
         tl.add(`.segment-${i}`, show)
         tl.add(`.segment-${i}`, i % 2 === 0 ? flipUp : flipDown)
-        if (i === 4) {
+        if (i === segments - 1) {
           tl.add(`.label-${i}`, show)
           tl.add(`.dot-${i}`, show)
         }
@@ -80,20 +86,22 @@ export const Bar = ({
     return () => {
       scope.revert()
     }
-  }, [])
+  }, [segments])
 
   return (
     <div css={barStyle} ref={root}>
-      {Array.from({ length: segments }).map((_, index) => (
-        <div key={index} className={`segment-${index}`} css={segmentStyle}>
-          <div
-            className={`label-${index}`}
-            css={{ ...labelStyle, color: color }}
-          >
+      {Array.from({ length: segments }).map((_, i) => (
+        <div
+          key={i}
+          className={`segment-${i}`}
+          css={segmentStyle}
+          style={{ zIndex: i }}
+        >
+          <div className={`label-${i}`} css={{ ...labelStyle, color: color }}>
             {label}
           </div>
           <div
-            className={`dot-${index}`}
+            className={`dot-${i}`}
             css={{ ...dotStyle, backgroundColor: dotColor }}
             onClick={onClick}
           />
@@ -106,6 +114,7 @@ export const Bar = ({
 export interface BarProps {
   color: string
   dotColor: string
+  duration: number
   label: string
   segments: number
   onClick?: () => void
