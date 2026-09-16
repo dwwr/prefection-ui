@@ -94,6 +94,7 @@ export const Bar = ({
   segments,
   staggerDelay,
   zIndexBase,
+  tip,
   select = 'extend',
   onClick,
 }: BarProps) => {
@@ -141,35 +142,48 @@ export const Bar = ({
 
   return (
     <div className="bar" css={barStyle} ref={root}>
-      {Array.from({ length: segments + extra }).map((_, i) => (
-        <div
-          key={i}
-          className={`segment-${i}`}
-          css={segmentStyle}
-          style={{
-            zIndex: i + (zIndexBase || 0),
-            backgroundColor: color,
-            ...(segments > 1 && i === 0
-              ? { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }
-              : {}),
-          }}
-        >
-          <div className={`label-${i}`} css={labelStyle}>
-            {label}
-          </div>
+      {Array.from({ length: segments + extra }).map((_, i) => {
+        const isTip = extra > 0 && i === segments
+        const segColor = isTip ? tip?.color ?? color : color
+        const segDot = isTip ? tip?.dotColor ?? tip?.color ?? dotColor : dotColor
+        const segLabel = isTip ? tip?.label ?? label : label
+
+        return (
           <div
-            className={`dot-${i}`}
-            css={dotStyle}
-            style={{ backgroundColor: dotColor }}
-            onClick={handleClick}
-          />
-        </div>
-      ))}
+            key={i}
+            className={`segment-${i}`}
+            css={segmentStyle}
+            style={{
+              zIndex: i + (zIndexBase || 0),
+              backgroundColor: segColor,
+              ...(segments > 1 && i === 0
+                ? { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }
+                : {}),
+            }}
+          >
+            <div className={`label-${i}`} css={labelStyle}>
+              {segLabel}
+            </div>
+            <div
+              className={`dot-${i}`}
+              css={dotStyle}
+              style={{ backgroundColor: segDot }}
+              onClick={handleClick}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 export type SelectMotion = 'extend' | 'none'
+
+export interface BarTip {
+  label: string
+  color: string
+  dotColor?: string
+}
 
 export interface BarProps {
   color: string
@@ -179,6 +193,7 @@ export interface BarProps {
   segments: number
   staggerDelay?: number
   zIndexBase?: number
+  tip?: BarTip
   select?: SelectMotion
   onClick?: () => void
 }

@@ -18,12 +18,12 @@ const groupStyle = css`
 const itemStyle = css`
   position: relative;
   width: fit-content;
+  transform-origin: left center;
 `
 
 const nestedStyle = css`
   position: absolute;
   right: 0;
-  bottom: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -51,8 +51,12 @@ export const BarGroup = ({
 
       const parent =
         recoilFrom?.current?.querySelector<HTMLElement>(':scope > .bar')
+      const tip = parent?.querySelector<HTMLElement>(
+        ':scope > [class^=segment-]:last-child'
+      )
       const n = items.length
       const h = items[0].offsetHeight || 48
+      const droopStep = 0.25
       const tl = createTimeline({ defaults: { ease: 'outQuad' } })
 
       for (let i = 0; i < n; i++) {
@@ -60,17 +64,28 @@ export const BarGroup = ({
           y: (n - i) * h,
           x: 0,
           opacity: 0,
+          rotate: '0deg',
         })
+      }
+
+      if (tip) {
+        tl.set(tip, { rotate: '0deg' })
       }
 
       // Closest to parent first, building the stack upward
       for (let i = n - 1; i >= 0; i--) {
+        const stacked = n - i
+        const droop = `${stacked * droopStep}deg`
         tl.add(items[i], { opacity: 1, x: '15rem', duration: 70 })
         if (parent) {
           tl.add(parent, { x: '-0.5rem', duration: 70 }, '<')
           tl.add(parent, { x: 0, duration: 25 })
         }
         tl.add(items[i], { x: 0, y: 0, duration: 25 })
+
+        const settled = [items[i], ...Array.from(items).slice(i + 1)]
+        if (tip) settled.unshift(tip)
+        tl.add(settled, { rotate: droop, duration: 140 }, '<')
       }
     })
 
@@ -121,6 +136,7 @@ const NavItem = ({
         <div
           css={nestedStyle}
           style={{
+            bottom: `calc(100% - ${children.length}px)`,
             zIndex: zIndexBase + (index + 1) * bar.segments,
           }}
         >

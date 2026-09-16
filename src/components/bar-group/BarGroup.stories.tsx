@@ -25,7 +25,7 @@ type Story = StoryObj<typeof BarGroup>
 
 const bar = {
   duration: 150,
-  segments: 4,
+  segments: 2,
 }
 
 const bars = [
@@ -65,6 +65,11 @@ export const Nested: Story = {
       bars[0],
       {
         ...bars[1],
+        tip: {
+          label: 'Intro',
+          color: '#7dd3f0',
+          dotColor: '#24c2f3',
+        },
         children: [
           { ...child, label: 'Who', color: '#cfd6d4', dotColor: '#b7bebc' },
           { ...child, label: 'What', color: '#e07a5f', dotColor: '#c45f46' },
