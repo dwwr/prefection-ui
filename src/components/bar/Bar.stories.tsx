@@ -34,3 +34,15 @@ export const Default: Story = {
     segments: 5,
   },
 }
+export const OnClickTest: Story = {
+  args: {
+    color: 'blue',
+    dotColor: 'lightblue',
+    duration: 200,
+    label: 'Label',
+    segments: 5,
+    onClick: () => {
+      console.log('clicked')
+    },
+  },
+}

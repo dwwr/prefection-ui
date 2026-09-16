@@ -24,8 +24,8 @@ export default meta
 type Story = StoryObj<typeof BarGroup>
 
 const bar = {
-  duration: 200,
-  segments: 5,
+  duration: 150,
+  segments: 4,
 }
 
 const bars = [

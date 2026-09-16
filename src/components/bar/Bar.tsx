@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react'
-import { createScope, createTimeline } from 'animejs'
+import { animate, createScope, createTimeline } from 'animejs'
 import { useEffect, useRef } from 'react'
 
 const barStyle = css`
@@ -43,6 +43,26 @@ const dotStyle = css`
   display: none;
 `
 
+// animations
+const show = {
+  duration: 0,
+  display: ['none', 'flex'],
+}
+
+const flipUp = (dur: number) => {
+  return {
+    duration: dur,
+    rotate: ['-180deg', '0deg'],
+  }
+}
+
+const flipDown = (dur: number) => {
+  return {
+    ...flipUp(dur),
+    rotate: ['180deg', '0deg'],
+  }
+}
+
 export const Bar = ({
   color,
   dotColor,
@@ -61,24 +81,12 @@ export const Bar = ({
     })
 
     const scope = createScope({ root }).add(() => {
-      const show = {
-        duration: 0,
-        display: ['none', 'flex'],
-      }
-
-      const flipUp = {
-        duration: duration,
-        rotate: ['-180deg', '0deg'],
-      }
-
-      const flipDown = {
-        ...flipUp,
-        rotate: ['180deg', '0deg'],
-      }
-
       for (let i = 0; i < segments; i++) {
         tl.add(`.segment-${i}`, show, i === 0 ? staggerDelay ?? 0 : undefined)
-        tl.add(`.segment-${i}`, i % 2 === 0 ? flipUp : flipDown)
+        tl.add(
+          `.segment-${i}`,
+          i % 2 === 0 ? flipUp(duration) : flipDown(duration)
+        )
         if (i === segments - 1) {
           tl.add(`.label-${i}`, show)
           tl.add(`.dot-${i}`, show)
@@ -93,7 +101,7 @@ export const Bar = ({
 
   return (
     <div css={barStyle} ref={root}>
-      {Array.from({ length: segments }).map((_, i) => (
+      {Array.from({ length: segments + 1 }).map((_, i) => (
         <div
           key={i}
           className={`segment-${i}`}
@@ -107,7 +115,41 @@ export const Bar = ({
             className={`dot-${i}`}
             css={dotStyle}
             style={{ backgroundColor: dotColor }}
-            onClick={onClick}
+            onClick={event => {
+              // animate(event.currentTarget, {
+              //   scale: [1, 1.3, 1],
+              //   duration: 200,
+              // })
+
+              // const i = segments // reserved extra, still hidden
+              // const next = root.current?.querySelector(`.segment-${i}`)
+              // const prevTip = root.current?.querySelectorAll(
+              //   `.label-${i - 1}, .dot-${i - 1}`
+              // )
+              // const nextTip = root.current?.querySelectorAll(
+              //   `.label-${i}, .dot-${i}`
+              // )
+              // const tl = createTimeline({ defaults: { duration } })
+              // tl.add(next, show)
+              // tl.add(nextTip, show)
+              // onClick?.()
+
+              const last = segments - 1
+              const next = segments
+              const rootEl = root.current
+              if (!rootEl) return
+              const lastSeg = rootEl.querySelector(`.segment-${last}`)
+              const nextSeg = rootEl.querySelector(`.segment-${next}`)
+              const nextTip = rootEl.querySelectorAll(
+                `.label-${next}, .dot-${next}`
+              )
+              const tl = createTimeline({ defaults: { duration } })
+              tl.add(lastSeg, { width: '22.5rem' })
+              tl.add(nextSeg, show)
+              tl.add(nextSeg, { width: { from: '0rem', to: '30rem' } })
+              tl.add(nextTip, show)
+              onClick?.()
+            }}
           />
         </div>
       ))}
