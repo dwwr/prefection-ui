@@ -1,21 +1,160 @@
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react'
+import { createScope, createTimeline } from 'animejs'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react'
 import { Bar, BarProps } from '../bar/Bar'
 
-export const BarGroup = ({ bars, staggerDelay = 0 }: BarGroupProps) => {
+const groupStyle = css`
+  position: relative;
+`
+
+const itemStyle = css`
+  position: relative;
+  width: fit-content;
+`
+
+const nestedStyle = css`
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: auto;
+  overflow: visible;
+`
+
+export const BarGroup = ({
+  bars,
+  staggerDelay = 0,
+  zIndexBase = 0,
+  enter,
+  recoilFrom,
+}: BarGroupProps) => {
+  const root = useRef<HTMLDivElement>(null)
+  const [selected, setSelected] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (enter !== 'pop-slide') return
+
+    const scope = createScope({ root }).add(() => {
+      const items =
+        root.current?.querySelectorAll<HTMLElement>(':scope > .nav-item')
+      if (!items?.length) return
+
+      const parent =
+        recoilFrom?.current?.querySelector<HTMLElement>(':scope > .bar')
+      const n = items.length
+      const h = items[0].offsetHeight || 48
+      const tl = createTimeline({ defaults: { ease: 'outQuad' } })
+
+      for (let i = 0; i < n; i++) {
+        tl.set(items[i], {
+          y: (n - i) * h,
+          x: 0,
+          opacity: 0,
+        })
+      }
+
+      // Closest to parent first, building the stack upward
+      for (let i = n - 1; i >= 0; i--) {
+        tl.add(items[i], { opacity: 1, x: '15rem', duration: 70 })
+        if (parent) {
+          tl.add(parent, { x: '-0.5rem', duration: 70 }, '<')
+          tl.add(parent, { x: 0, duration: 25 })
+        }
+        tl.add(items[i], { x: 0, y: 0, duration: 25 })
+      }
+    })
+
+    return () => {
+      scope.revert()
+    }
+  }, [enter, bars, recoilFrom])
+
   return (
-    <div className="bar-group">
+    <div className="bar-group" css={groupStyle} ref={root}>
       {bars.map((bar, index) => (
-        <Bar
-          key={index}
-          {...bar}
-          staggerDelay={staggerDelay * index}
-          zIndexBase={index * bar.segments}
+        <NavItem
+          key={bar.label}
+          bar={bar}
+          index={index}
+          staggerDelay={staggerDelay}
+          zIndexBase={zIndexBase}
+          selected={selected}
+          setSelected={setSelected}
         />
       ))}
     </div>
   )
 }
 
+const NavItem = ({
+  bar,
+  index,
+  staggerDelay,
+  zIndexBase,
+  selected,
+  setSelected,
+}: {
+  bar: NavItem
+  index: number
+  staggerDelay: number
+  zIndexBase: number
+  selected: string | null
+  setSelected: Dispatch<SetStateAction<string | null>>
+}) => {
+  const itemRef = useRef<HTMLDivElement>(null)
+  const { children, onClick, select = 'extend', ...barProps } = bar
+  const open = selected === bar.label && children && children.length > 0
+
+  return (
+    <div ref={itemRef} className="nav-item" css={itemStyle}>
+      {open && children && (
+        <div
+          css={nestedStyle}
+          style={{
+            zIndex: zIndexBase + (index + 1) * bar.segments,
+          }}
+        >
+          <BarGroup
+            bars={children}
+            staggerDelay={0}
+            zIndexBase={zIndexBase + (index + 1) * bar.segments}
+            enter="pop-slide"
+            recoilFrom={itemRef}
+          />
+        </div>
+      )}
+      <Bar
+        {...barProps}
+        select={select}
+        staggerDelay={staggerDelay * index}
+        zIndexBase={zIndexBase + index * bar.segments}
+        onClick={() => {
+          setSelected(current => (current === bar.label ? null : bar.label))
+          onClick?.()
+        }}
+      />
+    </div>
+  )
+}
+
+export interface NavItem extends Omit<BarProps, 'staggerDelay' | 'zIndexBase'> {
+  children?: NavItem[]
+}
+
 export interface BarGroupProps {
-  bars: BarProps[]
+  bars: NavItem[]
   staggerDelay?: number
+  zIndexBase?: number
+  enter?: 'pop-slide'
+  recoilFrom?: RefObject<HTMLDivElement | null>
 }

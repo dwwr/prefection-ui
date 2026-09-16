@@ -41,6 +41,7 @@ export const OnClickTest: Story = {
     duration: 200,
     label: 'Label',
     segments: 5,
+    select: 'extend',
     onClick: () => {
       console.log('clicked')
     },

@@ -47,7 +47,31 @@ const group = (count: number): Story => ({
   },
 })
 
+const child = {
+  duration: 100,
+  segments: 1,
+  select: 'none' as const,
+}
+
 export const Default = group(1)
 export const TwoBars = group(2)
 export const ThreeBars = group(3)
 export const FourBars = group(4)
+
+export const Nested: Story = {
+  args: {
+    staggerDelay: 500,
+    bars: [
+      bars[0],
+      {
+        ...bars[1],
+        children: [
+          { ...child, label: 'Who', color: '#cfd6d4', dotColor: '#b7bebc' },
+          { ...child, label: 'What', color: '#e07a5f', dotColor: '#c45f46' },
+          { ...child, label: 'Why', color: '#8a5aa8', dotColor: '#734a8e' },
+        ],
+      },
+      bars[2],
+    ],
+  },
+}
