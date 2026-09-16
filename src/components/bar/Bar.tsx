@@ -12,7 +12,7 @@ const segmentStyle = css`
   --h: 3rem;
   width: 15rem;
   height: var(--h);
-  background-color: blue;
+  min-height: var(--h);
   border-radius: 999px;
   margin-left: calc(-1 * var(--h));
   display: none;
@@ -40,7 +40,6 @@ const dotStyle = css`
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background-color: lightblue;
   display: none;
 `
 
@@ -50,12 +49,16 @@ export const Bar = ({
   duration,
   label,
   segments,
+  staggerDelay,
+  zIndexBase,
   onClick,
 }: BarProps) => {
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const tl = createTimeline({ defaults: { duration } })
+    const tl = createTimeline({
+      defaults: { duration },
+    })
 
     const scope = createScope({ root }).add(() => {
       const show = {
@@ -74,7 +77,7 @@ export const Bar = ({
       }
 
       for (let i = 0; i < segments; i++) {
-        tl.add(`.segment-${i}`, show)
+        tl.add(`.segment-${i}`, show, i === 0 ? staggerDelay ?? 0 : undefined)
         tl.add(`.segment-${i}`, i % 2 === 0 ? flipUp : flipDown)
         if (i === segments - 1) {
           tl.add(`.label-${i}`, show)
@@ -95,14 +98,15 @@ export const Bar = ({
           key={i}
           className={`segment-${i}`}
           css={segmentStyle}
-          style={{ zIndex: i }}
+          style={{ zIndex: i + (zIndexBase || 0), backgroundColor: color }}
         >
-          <div className={`label-${i}`} css={{ ...labelStyle, color: color }}>
+          <div className={`label-${i}`} css={labelStyle}>
             {label}
           </div>
           <div
             className={`dot-${i}`}
-            css={{ ...dotStyle, backgroundColor: dotColor }}
+            css={dotStyle}
+            style={{ backgroundColor: dotColor }}
             onClick={onClick}
           />
         </div>
@@ -117,5 +121,7 @@ export interface BarProps {
   duration: number
   label: string
   segments: number
+  staggerDelay?: number
+  zIndexBase?: number
   onClick?: () => void
 }
