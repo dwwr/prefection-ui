@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react'
 import { createScope, createTimeline } from 'animejs'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const barStyle = css`
   display: flex;
@@ -48,6 +48,11 @@ const show = {
   display: ['none', 'flex'],
 }
 
+const hide = {
+  duration: 0,
+  display: 'none',
+}
+
 const flipUp = (dur: number) => {
   return {
     duration: dur,
@@ -81,9 +86,23 @@ const extend = (
   return tl
 }
 
-const motions = {
-  extend,
-  none: () => {},
+const retract = (
+  rootEl: HTMLElement,
+  { segments, duration }: { segments: number; duration: number }
+) => {
+  const last = segments - 1
+  const next = segments
+  const lastSeg = rootEl.querySelector(`.segment-${last}`)
+  const nextSeg = rootEl.querySelector(`.segment-${next}`)
+  const nextTip = rootEl.querySelectorAll(`.label-${next}, .dot-${next}`)
+  if (!lastSeg || !nextSeg) return
+
+  const tl = createTimeline({ defaults: { duration } })
+  tl.add(nextTip, hide)
+  tl.add(nextSeg, { width: '0rem', rotate: '0deg' })
+  tl.add(nextSeg, hide)
+  tl.add(lastSeg, { width: '15rem' })
+  return tl
 }
 
 export const Bar = ({
@@ -96,10 +115,17 @@ export const Bar = ({
   zIndexBase,
   tip,
   select = 'extend',
+  expanded: expandedProp,
+  onExtendComplete,
   onClick,
 }: BarProps) => {
   const root = useRef<HTMLDivElement>(null)
-  const selected = useRef(false)
+  const extended = useRef(false)
+  const onExtendCompleteRef = useRef(onExtendComplete)
+  onExtendCompleteRef.current = onExtendComplete
+  const controlled = expandedProp !== undefined
+  const [internalExpanded, setInternalExpanded] = useState(false)
+  const expanded = controlled ? expandedProp : internalExpanded
   const extra = select === 'extend' ? 1 : 0
 
   useEffect(() => {
@@ -128,14 +154,34 @@ export const Bar = ({
     }
   }, [segments])
 
-  const handleClick = () => {
-    if (select === 'extend' && root.current && !selected.current) {
-      selected.current = true
-      const tl = motions.extend(root.current, { segments, duration })
+  useEffect(() => {
+    if (!root.current) return
+
+    if (select !== 'extend') {
+      if (expanded) onExtendCompleteRef.current?.()
+      return
+    }
+
+    if (expanded && !extended.current) {
+      extended.current = true
+      const tl = extend(root.current, { segments, duration })
       if (tl) {
-        tl.then(() => onClick?.())
-        return
+        tl.then(() => onExtendCompleteRef.current?.())
+      } else {
+        onExtendCompleteRef.current?.()
       }
+      return
+    }
+
+    if (!expanded && extended.current) {
+      extended.current = false
+      retract(root.current, { segments, duration })
+    }
+  }, [expanded, select, segments, duration])
+
+  const handleClick = () => {
+    if (!controlled && select === 'extend') {
+      setInternalExpanded(value => !value)
     }
     onClick?.()
   }
@@ -195,5 +241,7 @@ export interface BarProps {
   zIndexBase?: number
   tip?: BarTip
   select?: SelectMotion
+  expanded?: boolean
+  onExtendComplete?: () => void
   onClick?: () => void
 }

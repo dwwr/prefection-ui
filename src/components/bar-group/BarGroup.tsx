@@ -127,8 +127,14 @@ const NavItem = ({
   setSelected: Dispatch<SetStateAction<string | null>>
 }) => {
   const itemRef = useRef<HTMLDivElement>(null)
+  const [entered, setEntered] = useState(false)
   const { children, onClick, select = 'extend', ...barProps } = bar
-  const open = selected === bar.label && children && children.length > 0
+  const isSelected = selected === bar.label
+  const open = isSelected && entered && !!children?.length
+
+  useEffect(() => {
+    if (!isSelected) setEntered(false)
+  }, [isSelected])
 
   return (
     <div ref={itemRef} className="nav-item" css={itemStyle}>
@@ -152,8 +158,10 @@ const NavItem = ({
       <Bar
         {...barProps}
         select={select}
+        expanded={isSelected}
         staggerDelay={staggerDelay * index}
         zIndexBase={zIndexBase + index * bar.segments}
+        onExtendComplete={() => setEntered(true)}
         onClick={() => {
           setSelected(current => (current === bar.label ? null : bar.label))
           onClick?.()
@@ -163,7 +171,10 @@ const NavItem = ({
   )
 }
 
-export interface NavItem extends Omit<BarProps, 'staggerDelay' | 'zIndexBase'> {
+export interface NavItem extends Omit<
+  BarProps,
+  'staggerDelay' | 'zIndexBase' | 'expanded' | 'onExtendComplete'
+> {
   children?: NavItem[]
 }
 
