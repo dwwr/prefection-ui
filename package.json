@@ -7,10 +7,10 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "storybook dev -p 6006 --initial-path \"/?path=/story/bargroup--table-of-contents\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006 --initial-path \"/?path=/story/bargroup--table-of-contents\"",
     "build-storybook": "storybook build",
     "lint": "eslint src .storybook --ext .ts,.tsx"
   },
