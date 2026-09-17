@@ -18,16 +18,20 @@ type Story = StoryObj<typeof BarGroup>
 
 const bar = {
   duration: 150,
-  segments: 3,
+  segments: 5,
 }
 
 const bars = [
-  { label: 'Foreword', color: '#7b7fd4', dotColor: '#7b4a9a' },
-  { label: 'Hitchhiking', color: '#5ec8e8', dotColor: '#24c2f3' },
-  { label: 'Maps', color: '#3cbf6e', dotColor: '#2b9e57' },
-  { label: 'Guides', color: '#f0a03c', dotColor: '#d18932' },
-  { label: 'Useless Info', color: '#8fd14f', dotColor: '#8a5aa8' },
-  { label: 'Don’t Panic', color: '#8a5aa8', dotColor: '#8a5aa8' },
+  {
+    label: 'Foreword',
+    color: '#6752a1',
+    dotColor: '#53418a',
+  },
+  { label: 'Hitchhiking', color: '#28c4b4', dotColor: '#1fa89a' },
+  { label: 'Maps', color: '#74b72e', dotColor: '#5f9624' },
+  { label: 'Guides', color: '#c88736', dotColor: '#a86f2a' },
+  { label: 'Useless Info', color: '#a15252', dotColor: '#874343' },
+  { label: 'Don’t Panic', color: '#702963', dotColor: '#5a2050' },
 ].map(row => ({
   ...bar,
   ...row,
@@ -70,6 +74,68 @@ export const Nested: Story = {
         ],
       },
       bars[2],
+    ],
+  },
+}
+
+export const TableOfContents: Story = {
+  args: {
+    staggerDelay: 120,
+    bars: [
+      {
+        ...bar,
+        label: 'Foreword',
+        color: '#6752a1',
+        dotColor: '#53418a',
+      },
+      {
+        ...bar,
+        label: 'Hitchhiking',
+        color: '#28c4b4',
+        dotColor: '#1fa89a',
+        tip: {
+          label: 'The Guide',
+          color: '#41a5ee',
+          dotColor: '#2f58d4',
+        },
+      },
+      {
+        ...bar,
+        label: 'Maps',
+        color: '#74b72e',
+        dotColor: '#5f9624',
+      },
+      {
+        ...bar,
+        label: 'Guides',
+        color: '#c88736',
+        dotColor: '#a86f2a',
+      },
+      {
+        ...bar,
+        label: 'Useless Info',
+        color: '#a15252',
+        dotColor: '#874343',
+        tip: {
+          label: 'Introduction',
+          color: '#5ab467',
+          dotColor: '#4a9855',
+        },
+        children: [
+          { ...child, label: 'Who', color: '#74b72e', dotColor: '#5f9624' },
+          { ...child, label: 'What', color: '#c88736', dotColor: '#a86f2a' },
+          { ...child, label: 'Why', color: '#a15252', dotColor: '#874343' },
+          { ...child, label: 'Where', color: '#702963', dotColor: '#5a2050' },
+          { ...child, label: 'When', color: '#6752a1', dotColor: '#53418a' },
+          { ...child, label: 'How', color: '#41a5ee', dotColor: '#2f8fd4' },
+        ],
+      },
+      {
+        ...bar,
+        label: 'Don’t Panic',
+        color: '#702963',
+        dotColor: '#5a2050',
+      },
     ],
   },
 }

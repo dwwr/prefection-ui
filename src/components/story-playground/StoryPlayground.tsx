@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react'
 const shellStyle = css`
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   min-height: 500px;
   box-sizing: border-box;
   padding-top: 10rem;
