@@ -14,6 +14,7 @@ const shellStyle = css`
   font-family: var(--font-din);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  overflow: hidden;
 `
 
 const controlsStyle = css`

@@ -18,7 +18,11 @@ type Story = StoryObj<typeof BarGroup>
 
 const bar = {
   duration: 150,
-  segments: 5,
+  segments:
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 768px)').matches
+      ? 2
+      : 3,
 }
 
 const bars = [
