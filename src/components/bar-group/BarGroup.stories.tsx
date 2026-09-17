@@ -1,21 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import { StoryPlayground } from '../story-playground/StoryPlayground'
 import { BarGroup } from './BarGroup'
 
 const meta: Meta<typeof BarGroup> = {
   title: 'BarGroup',
   component: BarGroup,
   render: args => (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        minHeight: '500px',
-        paddingTop: '10rem',
-        backgroundColor: '#f0c94a',
-      }}
-    >
+    <StoryPlayground>
       <BarGroup {...args} />
-    </div>
+    </StoryPlayground>
   ),
 }
 
@@ -25,7 +18,7 @@ type Story = StoryObj<typeof BarGroup>
 
 const bar = {
   duration: 150,
-  segments: 2,
+  segments: 3,
 }
 
 const bars = [
