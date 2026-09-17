@@ -18,7 +18,11 @@ type Story = StoryObj<typeof BarGroup>
 
 const bar = {
   duration: 150,
-  segments: 5,
+  segments:
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 768px)').matches
+      ? 2
+      : 3,
 }
 
 const bars = [
@@ -26,12 +30,38 @@ const bars = [
     label: 'Foreword',
     color: '#6752a1',
     dotColor: '#53418a',
+    tip: { label: 'Preface', color: '#8b7cc7', dotColor: '#6f5eab' },
   },
-  { label: 'Hitchhiking', color: '#28c4b4', dotColor: '#1fa89a' },
-  { label: 'Maps', color: '#74b72e', dotColor: '#5f9624' },
-  { label: 'Guides', color: '#c88736', dotColor: '#a86f2a' },
-  { label: 'Useless Info', color: '#a15252', dotColor: '#874343' },
-  { label: 'Don’t Panic', color: '#702963', dotColor: '#5a2050' },
+  {
+    label: 'Hitchhiking',
+    color: '#28c4b4',
+    dotColor: '#1fa89a',
+    tip: { label: 'The Guide', color: '#41a5ee', dotColor: '#2f58d4' },
+  },
+  {
+    label: 'Maps',
+    color: '#74b72e',
+    dotColor: '#5f9624',
+    tip: { label: 'Atlas', color: '#9fd45a', dotColor: '#74b72e' },
+  },
+  {
+    label: 'Guides',
+    color: '#c88736',
+    dotColor: '#a86f2a',
+    tip: { label: 'Directory', color: '#e0a85c', dotColor: '#c88736' },
+  },
+  {
+    label: 'Useless Info',
+    color: '#a15252',
+    dotColor: '#874343',
+    tip: { label: 'Introduction', color: '#5ab467', dotColor: '#4a9855' },
+  },
+  {
+    label: 'Don’t Panic',
+    color: '#702963',
+    dotColor: '#5a2050',
+    tip: { label: 'Towel', color: '#a84d96', dotColor: '#702963' },
+  },
 ].map(row => ({
   ...bar,
   ...row,
@@ -54,45 +84,12 @@ export const TableOfContents: Story = {
   args: {
     staggerDelay: 120,
     bars: [
+      bars[0],
+      bars[1],
+      bars[2],
+      bars[3],
       {
-        ...bar,
-        label: 'Foreword',
-        color: '#6752a1',
-        dotColor: '#53418a',
-      },
-      {
-        ...bar,
-        label: 'Hitchhiking',
-        color: '#28c4b4',
-        dotColor: '#1fa89a',
-        tip: {
-          label: 'The Guide',
-          color: '#41a5ee',
-          dotColor: '#2f58d4',
-        },
-      },
-      {
-        ...bar,
-        label: 'Maps',
-        color: '#74b72e',
-        dotColor: '#5f9624',
-      },
-      {
-        ...bar,
-        label: 'Guides',
-        color: '#c88736',
-        dotColor: '#a86f2a',
-      },
-      {
-        ...bar,
-        label: 'Useless Info',
-        color: '#a15252',
-        dotColor: '#874343',
-        tip: {
-          label: 'Introduction',
-          color: '#5ab467',
-          dotColor: '#4a9855',
-        },
+        ...bars[4],
         children: [
           { ...child, label: 'Who', color: '#74b72e', dotColor: '#5f9624' },
           { ...child, label: 'What', color: '#c88736', dotColor: '#a86f2a' },
@@ -102,12 +99,7 @@ export const TableOfContents: Story = {
           { ...child, label: 'How', color: '#41a5ee', dotColor: '#2f8fd4' },
         ],
       },
-      {
-        ...bar,
-        label: 'Don’t Panic',
-        color: '#702963',
-        dotColor: '#5a2050',
-      },
+      bars[5],
     ],
   },
 }

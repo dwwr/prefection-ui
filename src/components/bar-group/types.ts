@@ -13,6 +13,6 @@ export interface BarGroupProps {
   bars: NavItem[]
   staggerDelay?: number
   zIndexBase?: number
-  enter?: 'pop-slide'
+  enter?: 'pop-slide' | 'drop-below'
   recoilFrom?: RefObject<HTMLDivElement | null>
 }
