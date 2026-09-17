@@ -1,13 +1,9 @@
 import { createScope, createTimeline } from 'animejs'
 import type { RefObject } from 'react'
 
-/**
- * Mobile nested enter: grow a bar-height gap below the parent, then slide
- * tip (optional) and each child in from the left. No droop.
- */
 export function runDropBelowEnter(
   nested: RefObject<HTMLDivElement | null>,
-  rowHeight?: number,
+  rowHeight?: number
 ): () => void {
   const scope = createScope({ root: nested }).add(() => {
     const root = nested.current
@@ -15,7 +11,7 @@ export function runDropBelowEnter(
 
     const tip = root.querySelector<HTMLElement>(':scope > .tip-item')
     const children = root.querySelectorAll<HTMLElement>(
-      ':scope > .bar-group > .nav-item',
+      ':scope > .bar-group > .nav-item'
     )
 
     const rows: HTMLElement[] = []
@@ -26,16 +22,16 @@ export function runDropBelowEnter(
     const h = rowHeight || rows[0].offsetHeight || 48
     const tl = createTimeline({ defaults: { ease: 'outQuad' } })
 
-    // --- Initial: collapsed nest, rows off to the left ---
+    // Start: rows parked off to the left
     tl.set(root, { height: 0, overflow: 'hidden' })
     for (const row of rows) {
-      tl.set(row, { x: '-15rem', opacity: 0 })
+      tl.set(row, { x: '-15rem' })
     }
 
-    // --- Per row: grow gap by one bar-height, then slide in ---
+    // Grow space for child, then slide in from the left
     for (let i = 0; i < rows.length; i++) {
       tl.add(root, { height: (i + 1) * h, duration: 80 })
-      tl.add(rows[i], { x: 0, opacity: 1, duration: 100 })
+      tl.add(rows[i], { x: 0, duration: 100 })
     }
 
     tl.set(root, { overflow: 'visible' })

@@ -54,7 +54,7 @@ const bars = [
     label: 'Useless Info',
     color: '#a15252',
     dotColor: '#874343',
-    tip: { label: 'Introduction', color: '#5ab467', dotColor: '#4a9855' },
+    tip: { label: 'Intro', color: '#5ab467', dotColor: '#4a9855' },
   },
   {
     label: 'Don’t Panic',

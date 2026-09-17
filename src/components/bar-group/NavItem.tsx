@@ -35,6 +35,12 @@ const nestedMobileStyle = css`
   align-items: flex-end;
   width: fit-content;
   overflow: hidden;
+  height: 0;
+
+  .tip-item,
+  .bar-group > .nav-item {
+    transform: translateX(-15rem);
+  }
 `
 
 export const NavItem = ({
