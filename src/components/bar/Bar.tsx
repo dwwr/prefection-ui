@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react'
 import { createScope, createTimeline } from 'animejs'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const barStyle = css`
   display: flex;
@@ -10,7 +10,8 @@ const barStyle = css`
 
 const segmentStyle = css`
   --h: 3rem;
-  width: 15rem;
+  --w: 15rem;
+  width: var(--w);
   height: var(--h);
   min-height: var(--h);
   border-radius: 999px;
@@ -23,8 +24,7 @@ const segmentStyle = css`
   overflow: visible;
 
   &:first-of-type {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    margin-left: 0;
   }
 `
 
@@ -43,6 +43,68 @@ const dotStyle = css`
   display: none;
 `
 
+const show = {
+  duration: 0,
+  display: ['none', 'flex'],
+}
+
+const hide = {
+  duration: 0,
+  display: 'none',
+}
+
+const flipUp = (dur: number) => {
+  return {
+    duration: dur,
+    rotate: ['-180deg', '0deg'],
+  }
+}
+
+const flipDown = (dur: number) => {
+  return {
+    ...flipUp(dur),
+    rotate: ['180deg', '0deg'],
+  }
+}
+
+const extend = (
+  rootEl: HTMLElement,
+  { segments, duration }: { segments: number; duration: number }
+) => {
+  const last = segments - 1
+  const next = segments
+  const lastSeg = rootEl.querySelector(`.segment-${last}`)
+  const nextSeg = rootEl.querySelector(`.segment-${next}`)
+  const nextTip = rootEl.querySelectorAll(`.label-${next}, .dot-${next}`)
+  if (!lastSeg || !nextSeg) return
+
+  const tl = createTimeline({ defaults: { duration } })
+  tl.add(lastSeg, { width: '22.5rem' })
+  tl.add(nextSeg, show)
+  tl.add(nextSeg, { width: { from: '0rem', to: '30rem' } })
+  tl.add(nextTip, show)
+  return tl
+}
+
+const retract = (
+  rootEl: HTMLElement,
+  { segments, duration }: { segments: number; duration: number }
+) => {
+  const last = segments - 1
+  const next = segments
+  const lastSeg = rootEl.querySelector(`.segment-${last}`)
+  const nextSeg = rootEl.querySelector(`.segment-${next}`)
+  const nextTip = rootEl.querySelectorAll(`.label-${next}, .dot-${next}`)
+  if (!lastSeg || !nextSeg) return
+
+  const tl = createTimeline({ defaults: { duration } })
+  tl.add(nextTip, hide)
+  tl.add(nextSeg, { width: '0rem', rotate: '0deg' })
+  tl.add(nextSeg, hide)
+  tl.add(lastSeg, { width: '15rem' })
+  return tl
+}
+
 export const Bar = ({
   color,
   dotColor,
@@ -51,34 +113,36 @@ export const Bar = ({
   segments,
   staggerDelay,
   zIndexBase,
+  tip,
+  select = 'extend',
+  expanded: expandedProp,
+  onExtendComplete,
   onClick,
 }: BarProps) => {
   const root = useRef<HTMLDivElement>(null)
+  const extended = useRef(false)
+  const onExtendCompleteRef = useRef(onExtendComplete)
+  onExtendCompleteRef.current = onExtendComplete
+  const controlled = expandedProp !== undefined
+  const [internalExpanded, setInternalExpanded] = useState(false)
+  const expanded = controlled ? expandedProp : internalExpanded
+  const extra = select === 'extend' ? 1 : 0
 
+  // flip out segments to grow bar
   useEffect(() => {
     const tl = createTimeline({
       defaults: { duration },
     })
 
     const scope = createScope({ root }).add(() => {
-      const show = {
-        duration: 0,
-        display: ['none', 'flex'],
-      }
-
-      const flipUp = {
-        duration: duration,
-        rotate: ['-180deg', '0deg'],
-      }
-
-      const flipDown = {
-        ...flipUp,
-        rotate: ['180deg', '0deg'],
-      }
-
       for (let i = 0; i < segments; i++) {
         tl.add(`.segment-${i}`, show, i === 0 ? staggerDelay ?? 0 : undefined)
-        tl.add(`.segment-${i}`, i % 2 === 0 ? flipUp : flipDown)
+        if (segments > 1) {
+          tl.add(
+            `.segment-${i}`,
+            i % 2 === 0 ? flipUp(duration) : flipDown(duration)
+          )
+        }
         if (i === segments - 1) {
           tl.add(`.label-${i}`, show)
           tl.add(`.dot-${i}`, show)
@@ -91,28 +155,84 @@ export const Bar = ({
     }
   }, [segments])
 
+  // extend or retract tip of bar
+  useEffect(() => {
+    if (!root.current) return
+
+    if (select !== 'extend') {
+      if (expanded) onExtendCompleteRef.current?.()
+      return
+    }
+
+    if (expanded && !extended.current) {
+      extended.current = true
+      const tl = extend(root.current, { segments, duration })
+      if (tl) {
+        tl.then(() => onExtendCompleteRef.current?.())
+      } else {
+        onExtendCompleteRef.current?.()
+      }
+      return
+    }
+
+    if (!expanded && extended.current) {
+      extended.current = false
+      retract(root.current, { segments, duration })
+    }
+  }, [expanded, select, segments, duration])
+
+  const handleClick = () => {
+    if (!controlled && select === 'extend') {
+      setInternalExpanded(value => !value)
+    }
+    onClick?.()
+  }
+
   return (
-    <div css={barStyle} ref={root}>
-      {Array.from({ length: segments }).map((_, i) => (
-        <div
-          key={i}
-          className={`segment-${i}`}
-          css={segmentStyle}
-          style={{ zIndex: i + (zIndexBase || 0), backgroundColor: color }}
-        >
-          <div className={`label-${i}`} css={labelStyle}>
-            {label}
-          </div>
+    <div className="bar" css={barStyle} ref={root}>
+      {Array.from({ length: segments + extra }).map((_, i) => {
+        const isTip = extra > 0 && i === segments
+        const segColor = isTip ? tip?.color ?? color : color
+        const segDot = isTip
+          ? tip?.dotColor ?? tip?.color ?? dotColor
+          : dotColor
+        const segLabel = isTip ? tip?.label ?? label : label
+
+        return (
           <div
-            className={`dot-${i}`}
-            css={dotStyle}
-            style={{ backgroundColor: dotColor }}
-            onClick={onClick}
-          />
-        </div>
-      ))}
+            key={i}
+            className={`segment-${i}`}
+            css={segmentStyle}
+            style={{
+              zIndex: i + (zIndexBase || 0),
+              backgroundColor: segColor,
+              ...(segments > 1 && i === 0
+                ? { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }
+                : {}),
+            }}
+          >
+            <div className={`label-${i}`} css={labelStyle}>
+              {segLabel}
+            </div>
+            <div
+              className={`dot-${i}`}
+              css={dotStyle}
+              style={{ backgroundColor: segDot }}
+              onClick={handleClick}
+            />
+          </div>
+        )
+      })}
     </div>
   )
+}
+
+export type SelectMotion = 'extend' | 'none'
+
+export interface BarTip {
+  label: string
+  color: string
+  dotColor?: string
 }
 
 export interface BarProps {
@@ -123,5 +243,9 @@ export interface BarProps {
   segments: number
   staggerDelay?: number
   zIndexBase?: number
+  tip?: BarTip
+  select?: SelectMotion
+  expanded?: boolean
+  onExtendComplete?: () => void
   onClick?: () => void
 }
