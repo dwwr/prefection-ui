@@ -128,6 +128,7 @@ export const Bar = ({
   const expanded = controlled ? expandedProp : internalExpanded
   const extra = select === 'extend' ? 1 : 0
 
+  // flip out segments to grow bar
   useEffect(() => {
     const tl = createTimeline({
       defaults: { duration },
@@ -154,6 +155,7 @@ export const Bar = ({
     }
   }, [segments])
 
+  // extend or retract tip of bar
   useEffect(() => {
     if (!root.current) return
 
@@ -191,7 +193,9 @@ export const Bar = ({
       {Array.from({ length: segments + extra }).map((_, i) => {
         const isTip = extra > 0 && i === segments
         const segColor = isTip ? tip?.color ?? color : color
-        const segDot = isTip ? tip?.dotColor ?? tip?.color ?? dotColor : dotColor
+        const segDot = isTip
+          ? tip?.dotColor ?? tip?.color ?? dotColor
+          : dotColor
         const segLabel = isTip ? tip?.label ?? label : label
 
         return (
