@@ -9,7 +9,9 @@ import {
 } from 'react'
 import { Bar } from '../bar/Bar'
 import { BarGroup } from './BarGroup'
+import { runDropBelowEnter } from './dropBelowEnter'
 import type { NavItem as NavItemConfig } from './types'
+import { isMobileViewport } from './viewport'
 
 const itemStyle = css`
   position: relative;
@@ -25,6 +27,14 @@ const nestedStyle = css`
   align-items: flex-end;
   pointer-events: auto;
   overflow: visible;
+`
+
+const nestedMobileStyle = css`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: fit-content;
+  overflow: hidden;
 `
 
 export const NavItem = ({
@@ -43,29 +53,44 @@ export const NavItem = ({
   setSelected: Dispatch<SetStateAction<string | null>>
 }) => {
   const itemRef = useRef<HTMLDivElement>(null)
+  const nestedRef = useRef<HTMLDivElement>(null)
+  const [mobile] = useState(() => isMobileViewport())
   const [entered, setEntered] = useState(false)
-  const { children, onClick, select = 'extend', ...barProps } = bar
+  const { children, onClick, select = 'extend', tip, ...barProps } = bar
   const isSelected = selected === bar.label
-  const open = isSelected && entered && !!children?.length
+  const hasChildren = !!children?.length
+  const mobileExpand = mobile && (!!tip || hasChildren)
+  const openDesktop = !mobile && isSelected && entered && hasChildren
+  const openMobile = mobile && isSelected && entered && mobileExpand
+  const barSelect = mobileExpand ? 'none' : select
+  const nestZ = zIndexBase + (index + 1) * bar.segments
 
   useEffect(() => {
     if (!isSelected) setEntered(false)
   }, [isSelected])
 
+  useEffect(() => {
+    if (!openMobile) return
+    const rowHeight =
+      itemRef.current?.querySelector<HTMLElement>(':scope > .bar')
+        ?.offsetHeight || undefined
+    return runDropBelowEnter(nestedRef, rowHeight)
+  }, [openMobile, children, tip])
+
   return (
     <div ref={itemRef} className="nav-item" css={itemStyle}>
-      {open && children && (
+      {openDesktop && children && (
         <div
           css={nestedStyle}
           style={{
             bottom: `calc(100% - ${children.length}px)`,
-            zIndex: zIndexBase + (index + 1) * bar.segments,
+            zIndex: nestZ,
           }}
         >
           <BarGroup
             bars={children}
             staggerDelay={0}
-            zIndexBase={zIndexBase + (index + 1) * bar.segments}
+            zIndexBase={nestZ}
             enter="pop-slide"
             recoilFrom={itemRef}
           />
@@ -73,7 +98,8 @@ export const NavItem = ({
       )}
       <Bar
         {...barProps}
-        select={select}
+        tip={tip}
+        select={barSelect}
         expanded={isSelected}
         staggerDelay={staggerDelay * index}
         zIndexBase={zIndexBase + index * bar.segments}
@@ -83,6 +109,26 @@ export const NavItem = ({
           onClick?.()
         }}
       />
+      {openMobile && (
+        <div ref={nestedRef} css={nestedMobileStyle} style={{ zIndex: nestZ }}>
+          {tip && (
+            <div className="tip-item">
+              <Bar
+                label={tip.label}
+                color={tip.color}
+                dotColor={tip.dotColor ?? tip.color}
+                duration={barProps.duration}
+                segments={1}
+                select="none"
+                zIndexBase={nestZ}
+              />
+            </div>
+          )}
+          {hasChildren && (
+            <BarGroup bars={children} staggerDelay={0} zIndexBase={nestZ} />
+          )}
+        </div>
+      )}
     </div>
   )
 }
